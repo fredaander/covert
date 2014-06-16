@@ -73,6 +73,8 @@ public class ReferenceMonitor {
 			else
 				ObjectManager.objectRead(temp1, 0);
 		}
+		
+		printState(); 
 	}
 	
 	public static void processWrite (InstructionObject io)
@@ -124,6 +126,8 @@ public class ReferenceMonitor {
 			if (subseclevel<=objseclevel)
 				ObjectManager.objectWrite(temp2, val);
 		}
+		
+		printState();
 	}
 	
 	/*
@@ -131,9 +135,35 @@ public class ReferenceMonitor {
 	 * sensitivity level as subject
 	 * Post: add object to object arraylist
 	 */
-	public static void processCreate(InstructionObject instruct) {
-		//TODO Implement
-
+	public static void processCreate(InstructionObject io) {
+		Subject temp1 = null;
+		int subseclevel = 0;
+		String objname = io.getObjectName();
+		String subname = io.getSubjectName();
+		
+		ListIterator<Subject> SubIterator = SubList.listIterator();
+		Boolean foundsub = false;
+		while (SubIterator.hasNext())
+		{
+			temp1= SubIterator.next();
+			if (temp1.getName().equals(subname))
+			{
+				foundsub = true;
+				subseclevel = temp1.getSeclevel();
+				break;
+			}	
+		}
+		
+		if (!foundsub)
+		{
+			processBad();
+		}	
+		else
+		{
+			ObjList.add(new Object(objname, subseclevel, 0));
+		}
+		
+		printState();
 	}
 	
 	/*
@@ -141,8 +171,43 @@ public class ReferenceMonitor {
 	 * sensitivity level as subject
 	 * Post: remove object in object arraylist
 	 */
-	public static void processDestroy(InstructionObject instruct) {
-		//TODO Implement Destroy 
+	public static void processDestroy(InstructionObject io) {
+		Subject temp1 = null;
+		Object temp2 = null;
+		int objseclevel = 0;
+		int subseclevel = 0;
+		String objname = io.getObjectName();
+		String subname = io.getSubjectName();
+
+		
+		ListIterator<Subject> SubIterator = SubList.listIterator();
+		Boolean foundsub = false;
+		while (SubIterator.hasNext())
+		{
+			temp1= SubIterator.next();
+			if (temp1.getName().equals(subname))
+			{
+				foundsub = true;
+				subseclevel = temp1.getSeclevel();
+				break;
+			}	
+		}
+		ListIterator<Object> ObjIterator = ObjList.listIterator();
+		Boolean foundobj = false;
+		while (ObjIterator.hasNext())
+		{
+			temp2 = ObjIterator.next();
+			if (temp2.getName().equals(objname))
+			{
+				foundobj = true;
+				objseclevel = temp2.getSeclevel();
+				return; 
+			}	
+		}
+			//TODO CHECK LEVELS
+			ObjList.remove(temp2); 
+		
+		printState();
 	}
 	
 	public static void processBad()
