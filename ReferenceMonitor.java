@@ -1,4 +1,6 @@
+
 import java.util.*;
+
 public class ReferenceMonitor {
 
 	public static ArrayList<Object> ObjList = new ArrayList<Object>();
@@ -71,7 +73,6 @@ public class ReferenceMonitor {
 			else
 				ObjectManager.objectRead(temp1, 0);
 		}
-		printState();
 	}
 	
 	public static void processWrite (InstructionObject io)
@@ -123,7 +124,6 @@ public class ReferenceMonitor {
 			if (subseclevel<=objseclevel)
 				ObjectManager.objectWrite(temp2, val);
 		}
-		printState();
 	}
 	public static void processBad()
 	{
