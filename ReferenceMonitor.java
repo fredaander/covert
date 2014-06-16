@@ -125,6 +125,26 @@ public class ReferenceMonitor {
 				ObjectManager.objectWrite(temp2, val);
 		}
 	}
+	
+	/*
+	 * Pre: Accepts an instruction to create an object with same
+	 * sensitivity level as subject
+	 * Post: add object to object arraylist
+	 */
+	public static void processCreate(InstructionObject instruct) {
+		//TODO Implement
+
+	}
+	
+	/*
+	 * Pre: Accepts an instruction to destroy an object with same
+	 * sensitivity level as subject
+	 * Post: remove object in object arraylist
+	 */
+	public static void processDestroy(InstructionObject instruct) {
+		//TODO Implement Destroy 
+	}
+	
 	public static void processBad()
 	{
 		System.out.println("Bad Instrustion");
