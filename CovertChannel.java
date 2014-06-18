@@ -1,133 +1,82 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Scanner;
+import java.util.*;
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 
 public class CovertChannel {
 	
-	public static void main(String[] args) throws FileNotFoundException {
-//		//wrap in try/catch
-//		//	Can possibly generate inputfilename.out
+	public static void main(String[] args) throws IOException {
+		
+		//wrap in try/catch
+		//	Can possibly generate inputfilename.out
 //		if (args[0].equalsIgnoreCase("v")){
 //			//set verbose flag
 //			//call a verbose method
+//			System.out.println("Verbose");
 //		}
 //		else {
-//			Charset charset = Charset.forName("US-ASCII");
-//			Path apath = Paths.get(args[0]); 
-//			try (BufferedReader reader = Files.newBufferedReader(apath, charset)) {
-//			    String line = null;
-//			    while ((line = reader.readLine()) != null) {
-//			        System.out.println(line);
-//			    }
-//			} catch (IOException x) {
-//			    System.err.format("IOException: %s%n", x);
-//			}
+//			//Use scanner classes: nextByte(), hasNextByte(), 
+//			File file = new File(args[0]);
+//
+//	         byte[] b = new byte[(int) file.length()];
+//	         try {
+//	               FileInputStream fileInputStream = new FileInputStream(file);
+//	               fileInputStream.read(b);
+//	               for (int i = 0; i < b.length; i++) {
+//	                           System.out.print(b[i]);
+//	                }
+//	          } catch (FileNotFoundException e) {
+//	                      System.out.println("File Not Found.");
+//	                      e.printStackTrace();
+//	          }
+//	          catch (IOException e1) {
+//	                   System.out.println("Error Reading The File.");
+//	                    e1.printStackTrace();
+//	          }
 //		}
 		
-		Scanner scan = new Scanner(new FileReader(args[0]));
-		Subject lyle = new Subject("lyle", 0, 0);
-		Subject hal = new Subject ("hal", 10, 0);
-		ReferenceMonitor.addSubject(lyle);
-		ReferenceMonitor.addSubject(hal);
-		String inst;
-		String obj;
-		String sub;
-		int val = 0;
-		while (scan.hasNextLine()) {
-			if (!scan.hasNext()){
-				scan.nextLine();
-				continue;
-			}
-			inst = scan.next().toLowerCase();
-			//READ
-			if (inst.equalsIgnoreCase("read"))
-			{
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				sub = scan.next().toLowerCase();
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				obj = scan.next().toLowerCase();
-				System.out.println(inst+" "+sub+" "+obj+" ");
-				ReferenceMonitor.processRead(new InstructionObject(inst, obj, sub));
-			}
-			
-			//WRITE
-			else if (inst.equalsIgnoreCase("write"))
-			{
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				sub = scan.next().toLowerCase();
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				obj = scan.next().toLowerCase();
-				if (!scan.hasNextInt())
-				{
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				val = scan.nextInt();
-				System.out.println(inst+" "+sub+" "+obj+" "+val);
-				ReferenceMonitor.processWrite(new InstructionObject(inst, obj, sub, val));
-			}
-			//CREATE
-			else if (inst.equalsIgnoreCase("create"))
-			{
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				sub = scan.next().toLowerCase();
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				obj = scan.next().toLowerCase();
-			
-				System.out.println(inst+" "+sub+" "+obj);
-				ReferenceMonitor.processCreate(new InstructionObject(inst, obj, sub));
-			}
-			//DESTROY
-			else if (inst.equalsIgnoreCase("destroy"))
-			{
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				sub = scan.next().toLowerCase();
-				if (!scan.hasNext()){
-					ReferenceMonitor.processBad();
-					continue;
-				}
-				obj = scan.next().toLowerCase();
-			
-				System.out.println(inst+" "+sub+" "+obj);
-				ReferenceMonitor.processDestroy(new InstructionObject(inst, obj, sub));
-			}
-			else
-			{
-				ReferenceMonitor.processBad();
-			}
-		}	
 		
-		scan.close();
-		System.exit(0);
+		//This code FileChannel +MappedByte is taken from 
+		//http://nadeausoftware.com/articles/2008/02/java_tip_how_read_files_
+		//quickly#FileChannelwithMappedByteBufferandbytearraygets
 		
+		//Need to ask if this is ok to lift code below - works cited on README?
+		
+		//Open file and buffer read bytes
+		FileInputStream f = new FileInputStream(args[0]);
+		FileChannel ch = f.getChannel( );
+		MappedByteBuffer mb = ch.map( FileChannel.MapMode.READ_ONLY,
+		    0L, ch.size());
+		
+		//get one byte at a time
+		byte[] barray = new byte[1];
+		long checkSum = 0L;
+		int nGet;
+		
+		while( mb.hasRemaining() )
+		{
+			//gets one byte at a time
+		    nGet = Math.min( mb.remaining(), 1);
+		    mb.get( barray, 0, nGet );
+		    byte b= barray[0];
+		    String bits = ""; 
+		    
+		    //coverts byte to bits
+		    for (byte m= 1; m != 0; m<<= 1) {
+		       int bit= ((b&m) != 0)?1:0; 
+		       bits = bits + bit; //slow need to change or remove line
+		       //Instead of line above - probably best to create or not create Hal object
+		       //then run lyle's code 
+		       //and and come back here.
+		       
+		    }
+		    
+		    //THIS IS A PROOF OF CONCEPT-THIS CODE WILL BE DELETED
+		    String s = new String(barray); 
+		    System.out.println(bits + "\t" + s); 
+		}
 	}
 	
 	

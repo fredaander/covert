@@ -1,244 +1,147 @@
 
 import java.util.*;
 
-public class ReferenceMonitor {
+public class  ReferenceMonitor {
 
-	public static ArrayList<Object> ObjList = new ArrayList<Object>();
-	public static ArrayList<Subject> SubList = new ArrayList<Subject>();
+	private static HashMap<String, Object> objList = new HashMap<String, Object>();
+	
+	/*
+	 * Object Manager class - only reads and writes to objects
+	 */
 	public static class ObjectManager 
 	{
-		public static void objectRead (Subject sub, int val)
+		public static int executeRead (Object obj)
 		{
-			sub.setValue(val);
+			return obj.getValue();
 		}
-		public static void objectWrite (Object obj, int val)
+		public static void executeWrite (Object obj, int val)
 		{
 			obj.setValue(val);
 		}
 	}
-	public static void processRead (InstructionObject io)
+	
+	/*
+	 * pre: accepts read instruction, 
+	 *      checks simple security, reads to object
+	 * post: returns value read, also calls setSubjectValue to 
+	 *      store value into subject
+	 */
+	public static int processRead (InstructionObject io)
 	{
-		Subject temp1 = null;
-		Object temp2 = null;
-		int objseclevel = 0;
-		int subseclevel = 0;
-		int objvalue =0;
-		String command = io.getCommand();
-		String objname = io.getObjectName();
-		String subname = io.getSubjectName();
+		Object anObject = null;
+		int valueOfRead = 0;
 		
-		ListIterator<Subject> SubIterator = SubList.listIterator();
-		Boolean foundsub = false;
-		while (SubIterator.hasNext())
-		{
-			temp1= SubIterator.next();
-			if (temp1.getName().equals(subname))
-			{
-				foundsub = true;
-				subseclevel = temp1.getSeclevel();
-				break;
-			}	
-		}
-		ListIterator<Object> ObjIterator = ObjList.listIterator();
-		Boolean foundobj = false;
-		while (ObjIterator.hasNext())
-		{
-			temp2 = ObjIterator.next();
-			if (temp2.getName().equals(objname))
-			{
-				foundobj = true;
-				objseclevel = temp2.getSeclevel();
-				break;
-			}	
-		}
-		objvalue=temp2.getValue();
+		//calling read removes any value stored in sub regardless if valid read or not
+		if ( SecureSystem.hasSubject(io.getSubjectName()))
+			 SecureSystem.setSubjectValue(io.getSubjectName(), 0);
+		else processBad();
 		
-		if (!foundsub || !foundobj)
-		{
-			processBad();
-		}	
-		else if (foundsub && !foundobj)
-		{
-			//Send zero
-			ObjectManager.objectRead(temp1, 0);
-		}
-		else if (!foundsub && foundobj)
-		{
-			processBad();
-		}
-		else
-		{
-			if (subseclevel>=objseclevel)
-				ObjectManager.objectRead(temp1, objvalue);
-			else
-				ObjectManager.objectRead(temp1, 0);
-		}
+		//check if valid object - if so get it
+		if (objList.containsKey(io.getObjectName())) {anObject = objList.get(io.getObjectName()); } 
+		else processBad(); 
 		
-		printState(); 
+		//simple security
+		if ( SecureSystem.getSubjectLabel(io.getSubjectName()) >= anObject.getSeclevel()){
+				 SecureSystem.setSubjectValue(io.getSubjectName(), ObjectManager.executeRead(anObject));
+		}
+			
+		printState();
+		return valueOfRead; 
 	}
 	
+	/*
+	 * pre: accepts an write instruction, 
+	 *      checks *property, writes to object
+	 * post: stores value into object
+	 */
 	public static void processWrite (InstructionObject io)
 	{
-		Subject temp1 = null;
-		Object temp2 = null;
-		int objseclevel = 0;
-		int subseclevel = 0;
-		String objname = io.getObjectName();
-		String subname = io.getSubjectName();
-		int val = io.getValue();
+		Object anObject = null;
 		
-		ListIterator<Subject> SubIterator = SubList.listIterator();
-		Boolean foundsub = false;
-		while (SubIterator.hasNext())
-		{
-			temp1= SubIterator.next();
-			if (temp1.getName().equals(subname))
-			{
-				foundsub = true;
-				subseclevel = temp1.getSeclevel();
-				break;
-			}	
-		}
-		ListIterator<Object> ObjIterator = ObjList.listIterator();
-		Boolean foundobj = false;
-		while (ObjIterator.hasNext())
-		{
-			temp2 = ObjIterator.next();
-			if (temp2.getName().equals(objname))
-			{
-				foundobj = true;
-				objseclevel = temp2.getSeclevel();
-				break;
-			}	
-		}
+		//check if valid object and subject
+		if (objList.containsKey(io.getObjectName()) &&  SecureSystem.hasSubject(io.getSubjectName())) {
+			anObject = objList.get(io.getObjectName()); } 
+		else processBad(); 
 		
-		if (!foundsub || !foundobj)
-		{
-			processBad();
-		}	
-		else if (!foundsub && foundobj)
-		{
-			processBad();
+		//check *property
+		if ( SecureSystem.getSubjectLabel(io.getSubjectName()) <= anObject.getSeclevel()){
+				ObjectManager.executeWrite(anObject, io.getValue());
 		}
-		else
-		{
 			
-			if (subseclevel<=objseclevel)
-				ObjectManager.objectWrite(temp2, val);
-		}
-		
 		printState();
 	}
 	
 	/*
 	 * Pre: Accepts an instruction to create an object with same
 	 * sensitivity level as subject
-	 * Post: add object to object arraylist
+	 * Post: add object to object hashmap
 	 */
-	public static void processCreate(InstructionObject io) {
-		Subject temp1 = null;
-		int subseclevel = 0;
-		String objname = io.getObjectName();
-		String subname = io.getSubjectName();
+	public static void processCreate(InstructionObject io)
+	{
+		int lvl = 0; 
 		
-		ListIterator<Subject> SubIterator = SubList.listIterator();
-		Boolean foundsub = false;
-		while (SubIterator.hasNext())
-		{
-			temp1= SubIterator.next();
-			if (temp1.getName().equals(subname))
-			{
-				foundsub = true;
-				subseclevel = temp1.getSeclevel();
-				break;
-			}	
-		}
-		
-		if (!foundsub)
-		{
-			processBad();
-		}	
+		//check if valid subject and find lvl to create object
+		if ( SecureSystem.hasSubject(io.getSubjectName()))
+			lvl =  SecureSystem.getSubjectLabel(io.getSubjectName());
 		else
-		{
-			ObjList.add(new Object(objname, subseclevel, 0));
-		}
+			processBad(); 
 		
+		//if the object doesn't exist create it at subj level
+		if (!objList.containsKey(io.getObjectName())) {
+			objList.put(io.getObjectName(), new Object(io.getObjectName(), lvl, 0));
+		}
+			
 		printState();
 	}
 	
 	/*
 	 * Pre: Accepts an instruction to destroy an object with same
 	 * sensitivity level as subject
-	 * Post: remove object in object arraylist
+	 * Post: remove object in object hashmap
 	 */
-	public static void processDestroy(InstructionObject io) {
-		Subject temp1 = null;
-		Object temp2 = null;
-		int objseclevel = 0;
-		int subseclevel = 0;
-		String objname = io.getObjectName();
-		String subname = io.getSubjectName();
+	public static void processDestroy(InstructionObject io)
+	{
+		//check if subject, objects exists and *property -- remove
+		if ( SecureSystem.hasSubject(io.getSubjectName()) 
+				&& objList.containsKey(io.getObjectName())
+				&&  SecureSystem.getSubjectLabel(io.getSubjectName()) <= objList.get(io.getObjectName()).getSeclevel())
+			objList.remove(io.getObjectName());
+		else
+			processBad(); 
 
-		
-		ListIterator<Subject> SubIterator = SubList.listIterator();
-		Boolean foundsub = false;
-		while (SubIterator.hasNext())
-		{
-			temp1= SubIterator.next();
-			if (temp1.getName().equals(subname))
-			{
-				foundsub = true;
-				subseclevel = temp1.getSeclevel();
-				break;
-			}	
-		}
-		ListIterator<Object> ObjIterator = ObjList.listIterator();
-		Boolean foundobj = false;
-		while (ObjIterator.hasNext())
-		{
-			temp2 = ObjIterator.next();
-			if (temp2.getName().equals(objname))
-			{
-				foundobj = true;
-				objseclevel = temp2.getSeclevel();
-				return; 
-			}	
-		}
-			//TODO CHECK LEVELS
-			ObjList.remove(temp2); 
-		
 		printState();
 	}
 	
+	/*
+	 * pre: prints out state, doesn't run instruction
+	 */
 	public static void processBad()
 	{
 		System.out.println("Bad Instrustion");
 		printState();
 	}
-	public static void addSubject(Subject sub)
-	{
-		SubList.add(sub);
+	
+	//adds object to hash
+	public static void addObject(Object obj) {
+		// Add Object to objMap
+		objList.put(obj.getName(), obj);
 	}
-	public static void addObject(Object obj)
-	{
-		ObjList.add(obj);
+	
+	//checks if object is there
+	public static boolean hasObject(String subName){
+		return objList.containsKey(subName); 
 	}
+	
+	//prints out state
 	public static void printState()
-	{
-		ListIterator<Subject> SubIterator = SubList.listIterator();
-		Subject temps = null;
-		Object tempo = null;
-		while (SubIterator.hasNext())
-		{
-			temps=SubIterator.next();
-			System.out.println(temps.getName()+" has recently read: "+temps.getValue());	
-		}
-		ListIterator<Object> ObjIterator = ObjList.listIterator();
-		while (ObjIterator.hasNext())
-		{
-			tempo=ObjIterator.next();
-			System.out.println(tempo.getName()+" has value: "+tempo.getValue());		
-		}
-		System.out.println(" ");
+	{ 
+		//printout state
+		System.out.println("The current state is:");
+		
+		for (Object obj : objList.values())
+			System.out.println("\t"+ obj.getName() + " has value: " + obj.getValue());
+		
+		 SecureSystem.printValues(); 
+		System.out.println(); 
 	}
 }
