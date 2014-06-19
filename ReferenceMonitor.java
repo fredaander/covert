@@ -30,10 +30,11 @@ public class  ReferenceMonitor {
 	{
 		Object anObject = null;
 		int valueOfRead = 0;
+		String subName = io.getSubjectName(); 
 		
 		//calling read removes any value stored in sub regardless if valid read or not
-		if ( SecureSystem.hasSubject(io.getSubjectName()))
-			 SecureSystem.setSubjectValue(io.getSubjectName(), 0);
+		if ( SecureSystem.hasSubject(subName))
+			 SecureSystem.setSubjectValue(subName, 0);
 		else processBad();
 		
 		//check if valid object - if so get it
@@ -41,11 +42,9 @@ public class  ReferenceMonitor {
 		else processBad(); 
 		
 		//simple security
-		if ( SecureSystem.getSubjectLabel(io.getSubjectName()) >= anObject.getSeclevel()){
-				 SecureSystem.setSubjectValue(io.getSubjectName(), ObjectManager.executeRead(anObject));
+		if ( SecureSystem.getSubjectLabel(subName) >= anObject.getSeclevel()){
+				 SecureSystem.setSubjectValue(subName, ObjectManager.executeRead(anObject));
 		}
-			
-		printState();
 		return valueOfRead; 
 	}
 	
@@ -66,9 +65,7 @@ public class  ReferenceMonitor {
 		//check *property
 		if ( SecureSystem.getSubjectLabel(io.getSubjectName()) <= anObject.getSeclevel()){
 				ObjectManager.executeWrite(anObject, io.getValue());
-		}
-			
-		printState();
+		} 
 	}
 	
 	/*
@@ -90,8 +87,6 @@ public class  ReferenceMonitor {
 		if (!objList.containsKey(io.getObjectName())) {
 			objList.put(io.getObjectName(), new Object(io.getObjectName(), lvl, 0));
 		}
-			
-		printState();
 	}
 	
 	/*
@@ -101,15 +96,16 @@ public class  ReferenceMonitor {
 	 */
 	public static void processDestroy(InstructionObject io)
 	{
+		String objName = io.getObjectName(); 
+		String subName = io.getSubjectName();
+		
 		//check if subject, objects exists and *property -- remove
-		if ( SecureSystem.hasSubject(io.getSubjectName()) 
-				&& objList.containsKey(io.getObjectName())
-				&&  SecureSystem.getSubjectLabel(io.getSubjectName()) <= objList.get(io.getObjectName()).getSeclevel())
-			objList.remove(io.getObjectName());
+		if ( SecureSystem.hasSubject(subName) 
+				&& objList.containsKey(objName)
+				&&  SecureSystem.getSubjectLabel(subName) <= objList.get(objName).getSeclevel())
+			objList.remove(objName);
 		else
 			processBad(); 
-
-		printState();
 	}
 	
 	/*
@@ -118,7 +114,7 @@ public class  ReferenceMonitor {
 	public static void processBad()
 	{
 		System.out.println("Bad Instrustion");
-		printState();
+
 	}
 	
 	//adds object to hash

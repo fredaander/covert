@@ -1,4 +1,6 @@
 class InstructionObject {
+	
+	public static boolean verbose = false;
 	private String command;
 	private String objectName;
 	private String subjectName;
@@ -11,12 +13,16 @@ class InstructionObject {
 		this.objectName = objectName;
 		this.subjectName = subjectName;
 		this.value = value;
+		
+		if (verbose) {SecureSystem.logOutInstructions(command + " " + subjectName + " " + objectName + " " + value);}; 
 	}
 	public InstructionObject (String command, String objectName, String subjectName)
 	{
 		this.command=command;
 		this.objectName = objectName;
 		this.subjectName = subjectName;
+		
+		if (verbose) {SecureSystem.logOutInstructions(command + " " + subjectName + " " + objectName);}; 
 	}
 	public InstructionObject (String command)
 	{
