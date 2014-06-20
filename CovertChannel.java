@@ -73,7 +73,7 @@ public class CovertChannel {
 		
 		f.close();   //close file when done
 		
-		double totalTime = (System.nanoTime() - start)/1000000;  
+		double totalTime = (System.nanoTime() - start)/1000000.0;  
 		System.out.println("Timing: " + totalTime + " Bandwidth: " + (len*8)/totalTime); 
 	}
 
