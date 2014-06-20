@@ -27,17 +27,6 @@ class InstructionObject {
 		if (verbose) {SecureSystem.logOutInstructions(command + " " + subjectName + " " + objectName);}; 
 	}
 	
-	//What is this doing?
-	public InstructionObject (String command)
-	{
-		this.command = command;
-	}
-	//Why do you have this?
-	public InstructionObject getInstructionObject()
-	{
-		return this;
-	}
-	
 	//returns type of instruction
 	public String getCommand() {
 		return command;

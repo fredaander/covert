@@ -7,7 +7,7 @@ public class SecureSystem
 	private static HashMap<String, Subject> subMap = new HashMap<String, Subject>();
 	private static byte answer = 0x00;
 	public static int numOfBits = 0; 
-	private static byte[] barray = new byte[128];
+	private static byte[] barray = new byte[512];
 	public static int arrayIdx = 0; 
 
 	//sets the subject value
@@ -66,10 +66,10 @@ public class SecureSystem
 	    }
 	    
 	    //store values in barray for less times to io
-	    if (arrayIdx == 128) {
+	    if (arrayIdx == 512) {
 	    	bos.write(barray);
 	    	arrayIdx = 0; 
-	    	barray = new byte[128]; 
+	    	barray = new byte[512]; 
 	    }
 	}
 	

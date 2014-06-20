@@ -18,7 +18,10 @@ public class CovertChannel {
 			inputFile = args[1]; 
 		}
 		else inputFile = args[0]; 
-
+		
+		File finput = new File(inputFile); 
+		double len = finput.length(); 
+		
 		//find output file
 		output = inputFile + ".out";
 
@@ -67,11 +70,11 @@ public class CovertChannel {
 		
 		bos.flush();
 		fos.close();
-
+		
 		f.close();   //close file when done
 		
-		long totalTime = System.nanoTime() - start; 
-		System.out.println(totalTime); 
+		double totalTime = (System.nanoTime() - start)/1000000;  
+		System.out.println("Timing: " + totalTime + " Bandwidth: " + (len*8)/totalTime); 
 	}
 
 
