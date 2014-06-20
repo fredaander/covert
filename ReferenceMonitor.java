@@ -2,7 +2,8 @@
 import java.util.*;
 
 public class  ReferenceMonitor {
-
+	
+	//holds Objects are are currently in the system
 	private static HashMap<String, Object> objList = new HashMap<String, Object>();
 	
 	/*

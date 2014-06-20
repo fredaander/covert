@@ -1,9 +1,10 @@
 
 public class Object {
 
-	private String name;
-	private int seclevel;
-	private int value;
+	private String name;   //objects name
+	private int seclevel;  //security level
+	private int value;     //value stored in object
+	
 	
 	public Object(String name, int lev, int value) {
 		this.name = name;
@@ -11,17 +12,22 @@ public class Object {
 		this.value = value;
 	}
 	
+	//returns name
 	public String getName() {
 		return name;
 	}
 
+	//returns security level
 	public int getSeclevel() {
 		return seclevel;
 	}
 
+	//returns value
 	public int getValue() {
 		return value;
 	}
+	
+	//sets value to input integer
 	public void setValue(int value) {
 		this.value = value;
 	}
